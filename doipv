@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# adds/removes both v4 and v6 gridftp entries for a given fqdn
+
+# Usage: ./doipv {add|del} <fqdn>
+
+
+VIP_v4="red-gridftp.unl.edu"
+VIP_v6="2600:900:6:1101::da7a:1055"
+v6addr=`dig $2 aaaa +short`
+
+case "$1" in
+
+	add)
+		echo "Adding $2"
+		ipvsadm -a -t $VIP_v4:gsiftp -r $2:gsiftp
+		ipvsadm -a -t [$VIP_v6]:gsiftp -r [$v6addr]:gsiftp
+		;;
+
+	del)
+		echo "Deleting $2"
+		ipvsadm -d -t $VIP_v4:gsiftp -r $2:gsiftp
+		ipvsadm -d -t [$VIP_v6]:gsiftp -r [$v6addr]:gsiftp
+		;;
+
+	*)
+		echo "Usage: doipv {add|del} <fqdn>"
+		;;
+
+esac
+
