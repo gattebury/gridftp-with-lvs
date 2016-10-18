@@ -1,0 +1,19 @@
+#!/bin/sh
+# EL7 red-gridftp LVS magic
+
+
+# check if arptables needs installed
+if ! rpm -q --quiet arptables ; then
+        yum -y install arptables
+fi
+
+arptables -F
+arptables -A INPUT -d 129.93.239.157 -j DROP
+arptables -A OUTPUT -s 129.93.239.157 -j mangle --mangle-ip-s `ifconfig p1p1 | sed -n 's/.*inet \([0-9.]\+\)\s.*/\1/p'`
+arptables-save > /etc/sysconfig/arptables
+
+systemctl start arptables.service
+systemctl enable arptables.service
+
+ip addr add 129.93.239.157/26 dev p1p1
+ip -6 addr add 2600:900:6:1101::da7a:1055 dev lo

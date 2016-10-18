@@ -142,6 +142,17 @@ ip -6 addr add 2600:900:6:1101::da7a:1055 dev lo
 Ensuring these aliases persist across reboots can be tricky, at least with RHEL7, as the network init scripts seem to not support it as in the past. Invoking the ancient _rc.local_ demon is one solution here.
 
 
+#### IPv6 TCP_CHECK gotchas
+
+Using global IPv6 addresses for realservers and TCP_CHECK will most likely not work as the director host will send the checks from the virtual IPv6 address (which is the most recently brought up). There are a few workarounds to this, but an easy one is to mark the virtual address as deprecated such that the checks originate from the real IPv6 address of the director as follows:
+
+~~~
+ip -6 addr change 2600:900:6:1101::da7a:1055/64 dev em1 preferred_lft 0
+~~~
+
+There are some mailing list entries pondering whether keepalived should deprecate the virtual address by default but I don't believe that happens in any version (there are patches, but ... effort). Using link-local addresses may be another workaround but I haven't tested that fully.
+
+
 ## Tips / tricks
 
 * Watch _/var/log/messages_ to see what keepalived is doing, especially when it comes to the VRRP and heartbeat notifications with a pair of LVS directors.
